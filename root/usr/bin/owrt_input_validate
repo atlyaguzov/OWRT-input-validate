@@ -1,0 +1,47 @@
+#!/usr/bin/env lua
+
+require "ubus"
+require "uloop"
+
+local datatypes = require "owrt_input_validate.datatypes"
+local messages = require "owrt_input_validate.messages"
+
+local connect = ubus.connect()
+
+local objects = {
+	input = {
+		validate = {
+			function(req, msg)
+				local datatype = msg['datatype']
+				local value = msg['value']
+				local lang = msg['lang']
+				local error = false
+				if (lang ~= "ru" and lang ~= "en") then error = true end
+				if value == nil then error = true end
+				if not datatypes[datatype] then error = true end
+				if error then
+					connect:reply(req, {
+						error = messages.translate('en', 'wrong_request')
+					})
+					return
+				end
+				if (not datatypes[datatype](value)) then
+					connect:reply(req, {
+						error = messages.translate(lang, 'wrong_format'),
+						format = messages.translate(lang, datatype),
+						datatype = datatype
+					})
+				else
+					connect:reply(req, {
+						datatype = datatype
+					})
+				end
+			end, { datatype = ubus.STRING, value = ubus.STRING, lang = ubus.STRING }
+		}
+	}
+}
+
+connect:add(objects)
+
+uloop.run()
+
