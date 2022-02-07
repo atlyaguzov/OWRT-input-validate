@@ -1,6 +1,6 @@
 SECTION="NetPing modules"
 CATEGORY="Base"
-TITLE="EPIC OWRT-input-validate"
+TITLE="OWRT-input-validate"
 
 PKG_NAME="OWRT-input-validate"
 PKG_VERSION=0.1
@@ -8,37 +8,41 @@ PKG_RELEASE=1
 PKG_DEPENDS=ubus libubus-lua lua
 
 MODULE_NAME = owrt_input_validate
+
 MODULE_FILES_DIR = /usr/lib/lua/
-ETC_FILES_DIR=/etc/init.d/
-BIN_FILES_DIR=/usr/bin/
+MODULE_INIT_DIR = /etc/init.d/
+MODULE_BIN_DIR = /usr/libexec/
 
 INSTALL_DIR=
 
-.PHONY: all install clean
+.PHONY: all build preinstall install configure
 
-all: configure build install
+all: build preinstall install configure
 
-configure:
-	@echo "Nothing to do"
+ipk: build install
 
 build:
 	@echo "Nothing to do"
 
+configure:
+	$(MODULE_INIT_DIR)$(MODULE_NAME) enable
+	$(MODULE_INIT_DIR)$(MODULE_NAME) start
+
+preinstall:
+	@echo "Nothing to do"
+
 install:
 ifeq ($(origin INSTALL_DIR),command line)
-	for dir in $(MODULE_FILES_DIR) $(ETC_FILES_DIR) $(BIN_FILES_DIR); do mkdir -p $(INSTALL_DIR)$${dir}; done
+	for dir in $(MODULE_FILES_DIR) $(MODULE_INIT_DIR) $(MODULE_BIN_DIR); do mkdir -p $(INSTALL_DIR)$${dir}; done
 endif
 	cp -r root/usr/lib/lua/* $(INSTALL_DIR)$(MODULE_FILES_DIR)
-	cp root/etc/init.d/* $(INSTALL_DIR)$(ETC_FILES_DIR)
-	cp root/usr/bin/* $(INSTALL_DIR)$(BIN_FILES_DIR)
-ifneq ($(origin INSTALL_DIR),command line)
-	$(ETC_FILES_DIR)$(MODULE_NAME) enable
-	$(ETC_FILES_DIR)$(MODULE_NAME) start
-endif
+	cp root/etc/init.d/* $(INSTALL_DIR)$(MODULE_INIT_DIR)
+	cp root/usr/bin/* $(INSTALL_DIR)$(MODULE_BIN_DIR)
 
 clean:
-	$(ETC_FILES_DIR)$(MODULE_NAME) stop
-	$(ETC_FILES_DIR)$(MODULE_NAME) disable
+	echo "clean"
+	$(MODULE_INIT_DIR)$(MODULE_NAME) stop
+	$(MODULE_INIT_DIR)$(MODULE_NAME) disable
 	rm -rf $(MODULE_FILES_DIR)$(MODULE_NAME)
-	rm $(BIN_FILES_DIR)$(MODULE_NAME)
-	rm $(ETC_FILES_DIR)$(MODULE_NAME)
+	rm $(MODULE_BIN_DIR)$(MODULE_NAME)
+	rm $(MODULE_INIT_DIR)$(MODULE_NAME)
