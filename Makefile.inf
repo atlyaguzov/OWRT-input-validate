@@ -4,7 +4,7 @@ TITLE="OWRT-input-validate"
 
 PKG_NAME="OWRT-input-validate"
 PKG_VERSION=0.1
-PKG_RELEASE=1
+PKG_RELEASE=2
 PKG_DEPENDS=ubus libubus-lua lua
 
 MODULE_NAME = owrt_input_validate
